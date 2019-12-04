@@ -1,0 +1,135 @@
+1 基于auth组件做用户认证，需要使用Django自带的user表(user表也继承自AbstractUser)，可以自己创建一个新表继承auth包下的AbstractUser
+    From django.contrib.auth.models import AbstractUser
+
+    class UserInfo(AbstractUser):
+		"""扩展的字段"""
+		pass
+    注：在数据库迁移时，需要在项目配置文件settings中，注明使用自建的user表：AUTH_USER_MODEL = 'APP名称.UserInfo'
+	
+
+2 图形处理模块 pip install pillow ,可以动态生成图片
+
+	from PIL import Image，ImageDraw， ImageNetFont
+	
+	img = Image.new('RGB',(270,40),color="red") ---创建图片
+	# 1 生成随机图片,添加随机文字
+	# 方式一，存到文件
+	img.save(f,"png") ---f是文件句柄，将生成的图片以png的格式保存
+	
+	# 方式二，存到内存
+	from io import BytesIO
+	
+	f = BytesIO() 
+	
+	img.save(f,"png")
+	
+	data = f.getvalue() --读取内容中的图片文件
+	
+	draw = ImageDraw.Draw(img)
+	
+	font_1 = ImageFont.truetype("字体样式路径",size=)---size 字体大小
+	
+	draw.text((5,0),'python',颜色,font=font_1)  ---给生成的文件添加文字,font是字体样式
+	
+	# 2 添加噪点噪线
+	width = 270
+	height = 40
+	for i in range(100):
+		x1=random.randint(0,width)
+		x2=random.randint(0,width)
+		y1=random.randint(0,height)
+		y2=random.randint(0,height)
+		draw.line((x1,y1,x2,y2),fill=get_random_color())--get_random_color()随机颜色函数
+	
+	for i in rang(400):
+		draw.point([random.randint(0,width),random.randint(0,height)],fill=get_random_color())
+		x = random.randint(0,width)
+		y = random.randint(0,height)
+		draw.arc((x.y,x+4,y+4),0,90,fill=get_random_color())
+		
+	# 3 刷新验证码图片，在HTML文件中：
+	$("#valid_code_img").click(fuction(){
+		$(this)[0].src+="?"
+	})
+	
+3 ajax中发送POST请求时，要通过csrf-token校验，发送的数据中加：
+	csrfmiddlewaretoken:$("[name='csrfmiddlewaretoken']").val()
+
+4 用session把验证码值保存起来
+
+5 获取input标签中用户上传的文件对象：
+	file_obj = $("#avatar")[0].files[0]
+  获取上传的文件路径
+	reader = new FileReader()
+	reader.readAsDataURL(file_obj)
+	reader.result ---文件路径
+	# 用onload确保文件加载完再执行函数
+	reader.onload=function(){
+		$("#img").attr("src",reader.result)
+	}
+	
+6 AJAX上传文件时，用FormData
+	var formdata = new FormData();
+	
+	# 往formdata中插值，方式一
+	formdata.append("user",$("#id").val())
+	# 方式二
+	var request_list = $("#form").serializeArray();--将form标签中每组name：data整理为一个字典
+	$.each(request_list,function(index,data){   --循环上述字典，将数据插入formdata中
+		formdata.append(data.name,data.value)
+	})
+	
+	$.ajax({
+		url:'',
+		type:'post',
+		contentType:false, ---规定编码格式
+		processData:false,
+		data:formdata
+		success:function(data){
+			
+		}
+	}
+	)
+	
+7 配置media，用于保存用户上传文件，配置文件中
+	MEDIA_ROOT = os.path.join(BASE_DIR,"media")
+	
+8 media配置之MEDIA_URL
+	客户端访问media中数据
+	1 setting中配置：MEDIA_URL='media'
+	2 urls中加路径：from django.views.static import serve
+		            from cnblog import settings			
+		            re_path(r"media/(?P<path>.*,serve,{"document_root"：settings.MEDIA_ROOT})")
+	
+9 	日期归档查询
+方式一：
+		1 date_format
+		date 年月日  ； time  时分秒  ； datetime 年月日时分秒
+		date_format(dt,'%Y-%m-%d')  
+		
+		2 extra(),给QuerySet注入额外的SQL语句
+		例：res = models.Article.objects.extra(select={'is_recent':"create_time > '2017-09-07'"})
+		    在查询结果中每条记录都添加一个临时字段is_recent（值是create_time > '2017-09-07'的结果值）,表示Article对象的create_time是否晚于'2017-09-07'
+		在extra函数中使用date_format时，格式里要多加个%
+		例：extra(select={'data':"date_format(dt,'%%Y-%%m-%%d')"})
+方式二：
+		from django.db.models.functions import TruncMonth
+		Sales.objects.
+			  .annotate(month=TruncMonth('timestamp'))  # 从时间戳中截断日期到月份（取年月）
+			  .values('month')      
+			  .annotate(c=Count('id'))  #group by month; Count('id')
+			  .values('month','c')
+		
+10 建立自定义标签时，可以将HTML文件以及渲染它的数据一起制作成一个模块，给其它HTML文件使用（解决页面及数据的复用性）
+@register.inclusion_tag("class.html")
+def get_classs(username):
+	pass
+	return data 
+	
+	在HTML文件中调用：{% load my_tags %}  #my_tags文件在templatetags文件夹中
+					  {% get_classs username %} 	
+
+11  settings文件中时区设置
+	TIME_ZONE = 'Asia/Shanghai'
+	USE_TZ = False
+		

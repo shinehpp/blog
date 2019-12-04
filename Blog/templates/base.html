@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="/static/bootstrap-3.3.7-dist/js/jquery-3.4.1.js"></script>
+    <script type="text/javascript" src="/static/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7-dist/css/bootstrap.css">
+    <style>
+        .title{
+            height: 80px;
+            width: 100%;
+            background-color: #2aabd2;
+        }
+        .title span{
+            color: white;
+            font-size: 32px;
+            line-height: 80px;
+            margin-left: 20px;
+        }
+        .title .btn-default{
+            float: right;
+            color: white;
+            text-decoration: #2e6da4;
+            margin:40px 20px 0 0;
+        }
+    </style>
+</head>
+<body>
+<div class="title">
+    <span>{{ username }}</span>
+    <button class="btn btn-default">
+        <a href="#">管理</a>
+    </button>
+</div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="panel panel-success">
+                <div class="panel-heading">标签</div>
+                <div class="panel-body">
+                    {% for tag in tag_list %}
+                        <p>
+                            <a href="/{{ username }}/tag/{{ tag.0 }}/">{{ tag.0 }}</a>({{ tag.1 }})
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">分类</div>
+                <div class="panel-body">
+                    {% for category in category_list %}
+                        <p>
+                            <a href="/{{ username }}/category/{{ category.0 }}/">{{ category.0 }}</a>({{ category.1 }})
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="panel panel-primary">
+                <div class="panel-heading">日期归类</div>
+                <div class="panel-body">
+                    {% for time in time_list %}
+                        <p>
+                            <a href="/{{ username }}/time/{{ time.0|date:"Y-m" }}/">{{ time.0|date:"Y-m" }}</a>({{ time.1 }})
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-9">
+             {% block article %}
+
+             {% endblock %}
+        </div>
+    </div>
+</div>
+</body>
+</html>
